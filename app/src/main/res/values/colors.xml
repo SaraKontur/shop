@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+
+    <color name="colorAccent">#FF7043</color>
+
+    <color name="backgroundApp">#F5F7FA</color> <color name="backgroundCard">#FFFFFF</color> <color name="textPrimary">#263238</color> <color name="textSecondary">#78909C</color> <color name="textPrice">#4CAF50</color>   <color name="ratingGold">#FFC107</color>
+    <color name="deleteRed">#E53935</color>
+    <color name="white">#FFFFFF</color>
+
+    <color name="status_new_bg">#E3F2FD</color>
+    <color name="status_new_text">#1976D2</color>
+    <color name="status_process_bg">#FFF3E0</color>
+    <color name="status_process_text">#F57C00</color>
+    <color name="status_done_bg">#E8F5E9</color>
+    <color name="status_done_text">#388E3C</color>
 </resources>

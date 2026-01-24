@@ -16,7 +16,7 @@ class LoginActivity : AppCompatActivity() {
 
         val db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "shop-db")
             .allowMainThreadQueries()
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration() // Защита от вылетов при смене версии БД
             .build()
 
         // --- АВТОСОЗДАНИЕ ТЕСТОВЫХ ЮЗЕРОВ ---
@@ -39,7 +39,7 @@ class LoginActivity : AppCompatActivity() {
 
             if (user != null) {
                 val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("USER_ID", user.id) // Передаем ID того, кто вошел
+                intent.putExtra("USER_ID", user.id)
                 intent.putExtra("IS_ADMIN", user.isAdmin)
                 startActivity(intent)
                 finish()
@@ -48,8 +48,8 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // Переход на регистрацию
-        findViewById<TextView>(R.id.tvGoToRegister).setOnClickListener {
+        // ИСПРАВЛЕНО: Было R.id.tvGoToRegister, стало R.id.tvRegister (как в XML)
+        findViewById<TextView>(R.id.tvRegister).setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
     }

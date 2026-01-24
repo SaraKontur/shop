@@ -1,122 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F7FA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingBottom="32dp">
 
         <ImageView
             android:id="@+id/detailImage"
             android:layout_width="match_parent"
             android:layout_height="250dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:id="@+id/detailName"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:text="Название"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:id="@+id/detailPrice"
-            android:textSize="20sp"
-            android:textColor="#4CAF50"
-            android:text="0 $"
-            android:layout_marginTop="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:id="@+id/detailDesc"
-            android:textSize="16sp"
-            android:text="Описание товара..."
-            android:layout_marginTop="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:scaleType="fitCenter"
+            android:padding="50dp"
+            android:src="@android:drawable/ic_menu_camera"
+            android:background="#E0E0E0"/>
 
         <Button
-            android:id="@+id/btnAddToCart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="В корзину"
-            android:backgroundTint="#FF9800"/>
-
-        <TextView
-            android:text="Отзывы"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="30dp"
+            android:id="@+id/btnUploadImage"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="Загрузить фото"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginTop="-48dp"
+            android:layout_marginBottom="16dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="#F5F5F5"
-            android:padding="12dp"
-            android:layout_marginTop="10dp">
+            android:padding="16dp"
+            android:background="@android:color/white">
 
-            <RatingBar
-                android:id="@+id/ratingBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:numStars="5"
-                android:stepSize="1.0"
-                android:progressTint="#FFC107" />
+            <TextView android:id="@+id/detailName" android:textSize="24sp" android:textStyle="bold" android:textColor="#263238" android:text="Название" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/detailPrice" android:textSize="20sp" android:textStyle="bold" android:textColor="#4CAF50" android:text="100 $" android:layout_marginTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/detailDesc" android:textSize="16sp" android:textColor="#546E7A" android:text="Описание..." android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-            <EditText
-                android:id="@+id/etReview"
-                android:hint="Напишите комментарий..."
+            <EditText android:id="@+id/etName" android:hint="Название товара" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"/>
+            <EditText android:id="@+id/etPrice" android:hint="Цена" android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"/>
+            <EditText android:id="@+id/etDesc" android:hint="Описание товара" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"/>
+
+            <Spinner
+                android:id="@+id/spinnerCategory"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <Button
-                    android:id="@+id/btnAttachMedia"
-                    android:text="📷 Фото/Видео"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-                <ImageView
-                    android:id="@+id/ivReviewPreview"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_marginStart="16dp"
-                    android:scaleType="centerCrop"
-                    android:background="#E0E0E0"
-                    android:visibility="gone"/>
-            </LinearLayout>
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"/>
 
             <Button
-                android:id="@+id/btnSendReview"
-                android:text="Оставить отзыв"
+                android:id="@+id/btnAddToCart"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="В корзину"
+                android:backgroundTint="#3F51B5"
+                android:layout_marginTop="24dp"/>
+
+            <Button
+                android:id="@+id/btnSaveProduct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Сохранить товар"
+                android:backgroundTint="#4CAF50"
+                android:layout_marginTop="24dp"
+                android:visibility="gone"/>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/reviewsContainer"
+            android:id="@+id/reviewsBlock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="16dp"/>
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@android:color/white">
 
+            <TextView android:text="Отзывы" android:textSize="20sp" android:textStyle="bold" android:layout_marginBottom="16dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+            <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <RatingBar android:id="@+id/ratingBar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:numStars="5" android:progressTint="#FFC107"/>
+                <EditText android:id="@+id/etReview" android:hint="Ваш отзыв" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+                <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <Button android:id="@+id/btnAttachMedia" android:text="📷 Фото" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                    <ImageView android:id="@+id/ivReviewPreview" android:layout_width="50dp" android:layout_height="50dp" android:visibility="gone"/>
+                </LinearLayout>
+
+                <Button android:id="@+id/btnSendReview" android:text="Оставить отзыв" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout android:id="@+id/reviewsContainer" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

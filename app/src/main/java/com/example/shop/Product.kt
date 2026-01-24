@@ -63,5 +63,7 @@ data class Order(
     val ownerId: Int,
     val date: String,
     val itemsSummary: String,
-    val totalPrice: Double
+    val totalPrice: Double,
+    val status: String = "Создан",
+    val paymentMethod: String = "На сайте" // <--- ЭТО ПОЛЕ ОБЯЗАТЕЛЬНО
 )

@@ -5,13 +5,14 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton // <--- ВОТ ЭТОГО НЕ ХВАТАЛО
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class ProductAdapter(
     private val products: List<Product>,
-    private val favProductNames: List<String>, // <--- НОВОЕ: Список лайкнутых имен
+    private val favProductNames: List<String>,
     private val isAdmin: Boolean,
     private val onProductClick: (Product) -> Unit,
     private val onDeleteClick: (Product) -> Unit,
@@ -23,8 +24,11 @@ class ProductAdapter(
         val name: TextView = view.findViewById(R.id.tvName)
         val price: TextView = view.findViewById(R.id.tvPrice)
         val image: ImageView = view.findViewById(R.id.productImage)
-        val btnDelete: ImageView = view.findViewById(R.id.btnDelete)
-        val ivFav: ImageView = view.findViewById(R.id.ivFav)
+
+        // Теперь Kotlin знает, что такое ImageButton
+        val btnDelete: ImageButton = view.findViewById(R.id.btnDelete)
+        val ivFav: ImageButton = view.findViewById(R.id.ivFav)
+
         val rating: TextView = view.findViewById(R.id.tvRating)
     }
 
@@ -47,7 +51,6 @@ class ProductAdapter(
 
         // Логика рейтинга с количеством
         if (item.rating > 0) {
-            // Формат: "4.5 (10)"
             holder.rating.text = String.format("%.1f (%d)", item.rating, item.reviewCount)
             holder.rating.visibility = View.VISIBLE
         } else {
@@ -57,27 +60,22 @@ class ProductAdapter(
 
         holder.itemView.setOnClickListener { onProductClick(item) }
 
-        // --- ЛОГИКА СЕРДЕЧКА (ИСПРАВЛЕННАЯ) ---
-
-        // 1. Проверяем: лайкнут ли этот товар?
+        // --- ЛОГИКА СЕРДЕЧКА ---
         val isFavorite = favProductNames.contains(item.name)
 
-        // 2. Красим иконку в зависимости от состояния
         if (isFavorite) {
-            holder.ivFav.setImageResource(R.drawable.ic_heart) // Твоя иконка сердца
-            holder.ivFav.setColorFilter(Color.parseColor("#F44336")) // Красный
+            // Лайкнуто - Акцентный цвет
+            holder.ivFav.setColorFilter(holder.itemView.context.getColor(R.color.colorAccent))
         } else {
-            holder.ivFav.setImageResource(R.drawable.ic_heart)
-            holder.ivFav.setColorFilter(Color.parseColor("#BDBDBD")) // Серый
+            // Не лайкнуто - Серый цвет
+            holder.ivFav.setColorFilter(holder.itemView.context.getColor(R.color.textSecondary))
         }
 
-        // 3. При клике просто вызываем функцию MainActivity.
-        // Адаптер сам цвет менять НЕ БУДЕТ. MainActivity перезагрузит список, и цвет обновится сам.
         holder.ivFav.setOnClickListener {
             onFavClick(item)
         }
-        // --------------------------------------
 
+        // --- ЛОГИКА АДМИНА ---
         if (isAdmin) {
             holder.btnDelete.visibility = View.VISIBLE
             holder.btnDelete.setOnClickListener { onDeleteClick(item) }

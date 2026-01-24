@@ -45,12 +45,24 @@ interface ProductDao {
     @Query("SELECT EXISTS(SELECT * FROM favorites WHERE name = :name AND ownerId = :userId)") fun isFavorite(name: String, userId: Int): Boolean
 
     // --- ЗАКАЗЫ ---
-    @Insert fun insertOrder(order: Order)
-    @Query("SELECT * FROM orders WHERE ownerId = :userId ORDER BY id DESC") fun getUserOrders(userId: Int): List<Order>
+    @Insert
+    fun insertOrder(order: Order)
+
+    // Для обычного юзера (только свои)
+    @Query("SELECT * FROM orders WHERE ownerId = :userId ORDER BY id DESC")
+    fun getUserOrders(userId: Int): List<Order>
+
+    // НОВОЕ: Для Админа (вообще все заказы)
+    @Query("SELECT * FROM orders ORDER BY id DESC")
+    fun getAllOrders(): List<Order>
+
+    // НОВОЕ: Обновить статус заказа
+    @Update
+    fun updateOrder(order: Order)
 }
 
 // ВЕРСИЯ 8
-@Database(entities = [User::class, Product::class, CartItem::class, FavoriteItem::class, Order::class, Review::class], version = 8, exportSchema = false)
+@Database(entities = [User::class, Product::class, CartItem::class, FavoriteItem::class, Order::class, Review::class], version = 10, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun productDao(): ProductDao
 }
