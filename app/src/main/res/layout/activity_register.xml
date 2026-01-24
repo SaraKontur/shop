@@ -1,0 +1,14 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <TextView android:text="Регистрация" android:textSize="24sp" android:layout_marginBottom="20dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+    <EditText android:id="@+id/etRegLogin" android:hint="Придумайте логин" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/etRegPass" android:hint="Придумайте пароль" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+    <Button android:id="@+id/btnRegisterAction" android:text="Создать аккаунт" android:layout_marginTop="16dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+</LinearLayout>

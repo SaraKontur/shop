@@ -1,0 +1,34 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
+
+    <TextView android:text="Мой профиль" android:textSize="24sp" android:textStyle="bold" android:layout_marginBottom="24dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="60dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <ImageView
+            android:id="@+id/ivProfileAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@android:drawable/sym_def_app_icon"
+            android:scaleType="centerCrop"/>
+    </androidx.cardview.widget.CardView>
+
+    <Button android:id="@+id/btnChangeAvatar" android:text="Сменить фото" android:layout_marginBottom="24dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+    <EditText android:id="@+id/etProfileName" android:hint="Ваше имя" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <EditText android:id="@+id/etProfilePass" android:hint="Новый пароль" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <Button android:id="@+id/btnSaveProfile" android:text="Сохранить изменения" android:backgroundTint="#4CAF50" android:layout_marginTop="24dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <Button android:id="@+id/btnLogout" android:text="Выйти из аккаунта" android:backgroundTint="#F44336" android:layout_marginTop="40dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <Button android:id="@+id/btnOrders" android:text="Мои заказы" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <Button android:id="@+id/btnTheme" android:text="Переключить тему (День/Ночь)" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+</LinearLayout>

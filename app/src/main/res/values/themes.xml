@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.Shop" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#2196F3</item> <item name="android:windowBackground">#FFFFFF</item>
+        <item name="colorOnPrimary">#000000</item> </style>
+</resources>

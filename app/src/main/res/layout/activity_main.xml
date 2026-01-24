@@ -1,0 +1,90 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/topPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        android:padding="8dp">
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:iconifiedByDefault="false"
+            app:queryHint="Найти товар..."
+            android:background="@android:drawable/editbox_background"/>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginTop="8dp">
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
+                <Button android:id="@+id/chipAll" android:text="Все" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_marginEnd="4dp" android:layout_width="wrap_content" android:layout_height="40dp"/>
+                <Button android:id="@+id/chipPhones" android:text="Телефоны" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_marginEnd="4dp" android:layout_width="wrap_content" android:layout_height="40dp"/>
+                <Button android:id="@+id/chipClothes" android:text="Одежда" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_marginEnd="4dp" android:layout_width="wrap_content" android:layout_height="40dp"/>
+                <Button android:id="@+id/chipFood" android:text="Еда" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_marginEnd="4dp" android:layout_width="wrap_content" android:layout_height="40dp"/>
+                <Button android:id="@+id/chipOther" android:text="Разное" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="40dp"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/topPanel"
+        android:layout_above="@+id/cartPanel"
+        android:padding="4dp"
+        android:clipToPadding="false"/>
+
+    <LinearLayout
+        android:id="@+id/cartPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bottomNav"
+        android:orientation="horizontal"
+        android:background="#E3F2FD"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:visibility="gone"> <TextView
+        android:id="@+id/tvTotalPrice"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Итого: 0 $"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/btnCheckout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Купить всё"
+            android:backgroundTint="#4CAF50"/>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/bottomNav"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#FFFFFF"
+        app:menu="@menu/bottom_menu" />
+
+</RelativeLayout>
