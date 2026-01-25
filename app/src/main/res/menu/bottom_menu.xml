@@ -5,18 +5,20 @@
         android:icon="@drawable/ic_all"
         android:title="Главная" />
 
+
+    <item
+        android:id="@+id/menu_cart"
+        android:icon="@drawable/ic_cart"
+        android:title="Корзина" />
     <item
         android:id="@+id/menu_fav"
         android:icon="@drawable/ic_heart"
         android:title="Избранное" />
 
-    <item
-        android:id="@+id/menu_cart"
-        android:icon="@android:drawable/ic_menu_agenda"
-        android:title="Корзина" />
+
 
     <item
         android:id="@+id/menu_profile"
-        android:icon="@drawable/ic_phone"
+        android:icon="@drawable/ic_user"
         android:title="Профиль" />
 </menu>

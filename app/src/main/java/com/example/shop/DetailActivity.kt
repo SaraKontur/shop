@@ -25,7 +25,6 @@ class DetailActivity : AppCompatActivity() {
     private var reviewMediaType: String? = null
     private lateinit var ivReviewPreview: ImageView
 
-    // Список категорий
     private val categories = arrayOf("Электроника", "Одежда", "Еда", "Разное")
 
     private val pickProductImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -35,11 +34,10 @@ class DetailActivity : AppCompatActivity() {
                 contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 productMediaUri = uri.toString()
 
-                // Когда выбрали фото - убираем заглушку и делаем красиво
                 val iv = findViewById<ImageView>(R.id.detailImage)
                 iv.setImageURI(uri)
                 iv.scaleType = ImageView.ScaleType.CENTER_CROP
-                iv.setPadding(0,0,0,0) // Убираем отступы заглушки
+                iv.setPadding(0,0,0,0)
             }
         }
     }
@@ -81,7 +79,6 @@ class DetailActivity : AppCompatActivity() {
         val etPrice = findViewById<EditText>(R.id.etPrice)
         val etDesc = findViewById<EditText>(R.id.etDesc)
 
-        // Настройка спиннера (выпадающего списка)
         val spinnerCategory = findViewById<Spinner>(R.id.spinnerCategory)
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -92,11 +89,10 @@ class DetailActivity : AppCompatActivity() {
         val reviewsBlock = findViewById<LinearLayout>(R.id.reviewsBlock)
 
         if (isEditMode) {
-            // РЕЖИМ СОЗДАНИЯ
             etName.visibility = View.VISIBLE
             etPrice.visibility = View.VISIBLE
             etDesc.visibility = View.VISIBLE
-            spinnerCategory.visibility = View.VISIBLE // Показываем спиннер
+            spinnerCategory.visibility = View.VISIBLE
             btnUpload.visibility = View.VISIBLE
             btnSave.visibility = View.VISIBLE
 
@@ -118,7 +114,6 @@ class DetailActivity : AppCompatActivity() {
                 val name = etName.text.toString()
                 val priceStr = etPrice.text.toString()
                 val desc = etDesc.text.toString()
-                // Берем выбранную категорию из спиннера
                 val cat = spinnerCategory.selectedItem.toString()
 
                 if (name.isNotEmpty() && priceStr.isNotEmpty()) {
@@ -126,7 +121,7 @@ class DetailActivity : AppCompatActivity() {
                         name = name,
                         price = priceStr.toDoubleOrNull() ?: 0.0,
                         description = desc,
-                        category = cat, // Используем значение из спиннера
+                        category = cat,
                         imageUri = productMediaUri,
                         rating = 0f,
                         reviewCount = 0
@@ -140,7 +135,6 @@ class DetailActivity : AppCompatActivity() {
             }
 
         } else {
-            // РЕЖИМ ПРОСМОТРА
             val name = intent.getStringExtra("NAME") ?: ""
             val product = db.productDao().getProductByName(name)
             productId = product?.id ?: 0
@@ -179,12 +173,13 @@ class DetailActivity : AppCompatActivity() {
 
             findViewById<Button>(R.id.btnSendReview).setOnClickListener {
                 val rating = findViewById<RatingBar>(R.id.ratingBar).rating.toInt()
-                val text = findViewById<EditText>(R.id.etReview).text.toString()
+                val etReview = findViewById<EditText>(R.id.etReview)
+                val text = etReview.text.toString()
+
                 if (rating > 0) {
                     val user = db.productDao().getUserById(currentUserId)
                     val userName = user?.displayName ?: user?.login ?: "Аноним"
 
-                    // Красивая дата
                     val sdf = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
                     val currentDate = sdf.format(Date())
 
@@ -198,6 +193,13 @@ class DetailActivity : AppCompatActivity() {
                     }
 
                     Toast.makeText(this, "Отзыв отправлен", Toast.LENGTH_SHORT).show()
+
+                    // Очистка полей после отправки
+                    etReview.setText("")
+                    findViewById<RatingBar>(R.id.ratingBar).rating = 0f
+                    ivReviewPreview.visibility = View.GONE
+                    reviewMediaUri = null // Очищаем ссылку на фото
+
                     loadReviews()
                 }
             }
@@ -211,19 +213,29 @@ class DetailActivity : AppCompatActivity() {
         val reviews = db.productDao().getReviewsForProduct(productId)
 
         for (review in reviews) {
-            // Инфлейтим (создаем) красивую карточку из item_review.xml
             val view = LayoutInflater.from(this).inflate(R.layout.item_review, container, false)
 
             val tvAuthor = view.findViewById<TextView>(R.id.reviewAuthor)
             val tvDate = view.findViewById<TextView>(R.id.reviewDate)
             val tvText = view.findViewById<TextView>(R.id.reviewText)
             val ratingBar = view.findViewById<RatingBar>(R.id.reviewRating)
+            val ivReviewImage = view.findViewById<ImageView>(R.id.reviewImage) // Картинка внутри отзыва
 
             tvAuthor.text = review.userName
-            // Показываем дату (если в базе старые отзывы с плохой датой, просто покажем что есть)
             tvDate.text = review.date
             tvText.text = review.text
             ratingBar.rating = review.rating.toFloat()
+
+            // НОВОЕ: Показываем фото, если оно есть
+            if (review.mediaUri != null && review.mediaUri.isNotEmpty()) {
+                ivReviewImage.visibility = View.VISIBLE
+                ivReviewImage.setImageURI(Uri.parse(review.mediaUri))
+                ivReviewImage.setOnClickListener {
+                    // Можно добавить открытие на весь экран, но пока так
+                }
+            } else {
+                ivReviewImage.visibility = View.GONE
+            }
 
             container.addView(view)
         }
