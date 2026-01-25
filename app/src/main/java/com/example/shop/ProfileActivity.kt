@@ -4,11 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View // Важный импорт для View.VISIBLE
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
-import androidx.appcompat.app.AppCompatDelegate // Импорт
+import androidx.appcompat.app.AppCompatDelegate
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -33,14 +34,22 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
 
         currentUserId = intent.getIntExtra("USER_ID", 0)
-        db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "shop-db").allowMainThreadQueries().build()
+        db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "shop-db")
+            .allowMainThreadQueries()
+            .fallbackToDestructiveMigration()
+            .build()
 
         ivAvatar = findViewById(R.id.ivProfileAvatar)
         val etName = findViewById<EditText>(R.id.etProfileName)
         val etPass = findViewById<EditText>(R.id.etProfilePass)
 
+        // ВОТ ЗДЕСЬ МЫ НАХОДИМ СТАТУС
+        val tvStatus = findViewById<TextView>(R.id.tvStatus)
+        val btnManageCategories = findViewById<Button>(R.id.btnManageCategories)
+
         // Загружаем текущие данные
         val user = db.productDao().getUserById(currentUserId)
+
         if (user != null) {
             etName.setText(user.displayName)
             etPass.setText(user.pass)
@@ -48,6 +57,18 @@ class ProfileActivity : AppCompatActivity() {
                 ivAvatar.setImageURI(Uri.parse(user.avatarUri))
                 tempAvatarUri = user.avatarUri
             }
+
+            // --- ПРОВЕРКА НА АДМИНА (Внутри проверки на null) ---
+            if (user.isAdmin) {
+                tvStatus.text = "Администратор"
+                tvStatus.setTextColor(getColor(R.color.deleteRed))
+                btnManageCategories.visibility = View.VISIBLE
+            } else {
+                tvStatus.text = "Покупатель"
+                tvStatus.setTextColor(getColor(R.color.colorPrimary))
+                btnManageCategories.visibility = View.GONE
+            }
+            // ----------------------------------------------------
         }
 
         // Смена фото
@@ -74,7 +95,6 @@ class ProfileActivity : AppCompatActivity() {
         // Выйти (Logout)
         findViewById<Button>(R.id.btnLogout).setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
-            // Очищаем историю переходов, чтобы нельзя было вернуться назад кнопкой Back
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
@@ -87,13 +107,16 @@ class ProfileActivity : AppCompatActivity() {
 
         val btnTheme = findViewById<Button>(R.id.btnTheme)
         btnTheme.setOnClickListener {
-            // Проверяем текущий режим
             val currentMode = AppCompatDelegate.getDefaultNightMode()
             if (currentMode == AppCompatDelegate.MODE_NIGHT_YES) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             } else {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             }
+        }
+
+        btnManageCategories.setOnClickListener {
+            startActivity(Intent(this, CategoriesActivity::class.java))
         }
     }
 }

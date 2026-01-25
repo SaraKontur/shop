@@ -54,14 +54,16 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_search_rounded"> <ImageButton
-                android:id="@+id/btnMinus"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@android:drawable/ic_input_delete"
-                android:padding="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="@color/textSecondary"/>
+                android:background="@drawable/bg_search_rounded">
+
+                <ImageButton
+                    android:id="@+id/btnMinus"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_minus"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/textSecondary"/>
 
                 <TextView
                     android:id="@+id/tvQuantity"

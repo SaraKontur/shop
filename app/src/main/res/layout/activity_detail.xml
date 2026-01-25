@@ -42,6 +42,16 @@
 
             <EditText android:id="@+id/etName" android:hint="Название товара" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"/>
             <EditText android:id="@+id/etPrice" android:hint="Цена" android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"/>
+
+            <EditText
+                android:id="@+id/etDiscount"
+                android:hint="Скидка (%)"
+                android:inputType="number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+
             <EditText android:id="@+id/etDesc" android:hint="Описание товара" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"/>
 
             <Spinner

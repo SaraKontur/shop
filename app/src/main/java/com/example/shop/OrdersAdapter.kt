@@ -9,11 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 
 class OrdersAdapter(
     private val orders: List<Order>,
-    private val isAdmin: Boolean,
-    private val onOrderClick: (Order) -> Unit // Действие при клике
+    private val isAdmin: Boolean, // Оставляем флаг, вдруг пригодится для скрытых функций
+    private val onOrderClick: (Order) -> Unit // Функция клика теперь открывает ДЕТАЛИ
 ) : RecyclerView.Adapter<OrdersAdapter.OrderHolder>() {
 
     class OrderHolder(view: View) : RecyclerView.ViewHolder(view) {
+        // Используем твои старые ID из item_order.xml
         val date: TextView = view.findViewById(R.id.orderDate)
         val status: TextView = view.findViewById(R.id.orderStatus)
         val items: TextView = view.findViewById(R.id.orderItems)
@@ -31,10 +32,13 @@ class OrdersAdapter(
 
         holder.date.text = order.date
         holder.items.text = order.itemsSummary
-        holder.total.text = "Итого: ${order.totalPrice} $\nОплата: ${order.paymentMethod}"
+
+        // ИСПРАВЛЕНО: Рубли вместо Долларов
+        holder.total.text = "Итого: ${order.totalPrice.toInt()} ₽\nОплата: ${order.paymentMethod}"
+
         holder.status.text = order.status
 
-        // Раскрашиваем статусы
+        // --- ТВОЯ КРАСИВАЯ ЛОГИКА ЦВЕТОВ ---
         when (order.status) {
             "Создан" -> {
                 holder.status.setTextColor(Color.parseColor("#2196F3")) // Синий
@@ -54,13 +58,18 @@ class OrdersAdapter(
             }
         }
 
-        // Если Админ — показываем подсказку и включаем клик
+        // --- ЛОГИКА КЛИКА ---
+        // Теперь кликать могут ВСЕ (чтобы посмотреть детали)
+        holder.itemView.setOnClickListener {
+            onOrderClick(order)
+        }
+
+        // Подсказку для админа можно скрыть или изменить текст
         if (isAdmin) {
-            holder.adminHint.visibility = View.VISIBLE
-            holder.itemView.setOnClickListener { onOrderClick(order) }
+            // Можно оставить, если админ будет менять статус внутри деталей
+            holder.adminHint.visibility = View.GONE
         } else {
             holder.adminHint.visibility = View.GONE
-            holder.itemView.setOnClickListener(null) // Обычный юзер не может менять статус
         }
     }
 

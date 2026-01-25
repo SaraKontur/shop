@@ -25,8 +25,6 @@ class DetailActivity : AppCompatActivity() {
     private var reviewMediaType: String? = null
     private lateinit var ivReviewPreview: ImageView
 
-    private val categories = arrayOf("Электроника", "Одежда", "Еда", "Разное")
-
     private val pickProductImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val uri = result.data?.data
@@ -66,6 +64,17 @@ class DetailActivity : AppCompatActivity() {
             .build()
 
         isEditMode = intent.getBooleanExtra("IS_EDIT", false)
+        val nameFromIntent = intent.getStringExtra("NAME")
+
+        // Пытаемся найти товар, если передано имя
+        var productToEdit: Product? = null
+        if (nameFromIntent != null) {
+            productToEdit = db.productDao().getProductByName(nameFromIntent)
+            productId = productToEdit?.id ?: 0
+            // Если мы редактируем, запоминаем старое фото
+            if (isEditMode) productMediaUri = productToEdit?.imageUri
+        }
+
         val currentUserId = intent.getIntExtra("USER_ID", 0)
 
         val ivImage = findViewById<ImageView>(R.id.detailImage)
@@ -77,20 +86,38 @@ class DetailActivity : AppCompatActivity() {
 
         val etName = findViewById<EditText>(R.id.etName)
         val etPrice = findViewById<EditText>(R.id.etPrice)
+        val etDiscount = findViewById<EditText>(R.id.etDiscount) // СКИДКА
         val etDesc = findViewById<EditText>(R.id.etDesc)
 
         val spinnerCategory = findViewById<Spinner>(R.id.spinnerCategory)
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+
+        // ЗАГРУЖАЕМ КАТЕГОРИИ ИЗ БАЗЫ
+        val dbCategories = db.productDao().getAllCategories()
+        val categoryNames = mutableListOf<String>()
+
+        // Если пусто (первый запуск), добавляем стандартные
+        if (dbCategories.isEmpty()) {
+            val defaults = listOf("Электроника", "Одежда", "Еда", "Разное")
+            for (name in defaults) db.productDao().insertCategory(Category(name = name))
+            categoryNames.addAll(defaults)
+        } else {
+            for (cat in dbCategories) categoryNames.add(cat.name)
+        }
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categoryNames)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCategory.adapter = adapter
+
 
         val btnCart = findViewById<Button>(R.id.btnAddToCart)
         val btnSave = findViewById<Button>(R.id.btnSaveProduct)
         val reviewsBlock = findViewById<LinearLayout>(R.id.reviewsBlock)
 
         if (isEditMode) {
+            // --- РЕЖИМ РЕДАКТОРА / СОЗДАНИЯ ---
             etName.visibility = View.VISIBLE
             etPrice.visibility = View.VISIBLE
+            etDiscount.visibility = View.VISIBLE // Показываем поле скидки
             etDesc.visibility = View.VISIBLE
             spinnerCategory.visibility = View.VISIBLE
             btnUpload.visibility = View.VISIBLE
@@ -101,6 +128,25 @@ class DetailActivity : AppCompatActivity() {
             tvDesc.visibility = View.GONE
             btnCart.visibility = View.GONE
             reviewsBlock.visibility = View.GONE
+
+            // Если это РЕДАКТИРОВАНИЕ (товар уже был), заполняем поля
+            if (productToEdit != null) {
+                etName.setText(productToEdit.name)
+                etPrice.setText(productToEdit.price.toString())
+                etDiscount.setText(productToEdit.discount.toString())
+                etDesc.setText(productToEdit.description)
+
+                // ИСПРАВЛЕНО: используем categoryNames вместо categories
+                val catIndex = categoryNames.indexOf(productToEdit.category)
+                if (catIndex >= 0) spinnerCategory.setSelection(catIndex)
+
+                // Грузим фото
+                if (productToEdit.imageUri != null) {
+                    ivImage.setImageURI(Uri.parse(productToEdit.imageUri))
+                    ivImage.scaleType = ImageView.ScaleType.CENTER_CROP
+                    ivImage.setPadding(0,0,0,0)
+                }
+            }
 
             btnUpload.setOnClickListener {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -113,21 +159,45 @@ class DetailActivity : AppCompatActivity() {
             btnSave.setOnClickListener {
                 val name = etName.text.toString()
                 val priceStr = etPrice.text.toString()
+                val discountStr = etDiscount.text.toString()
                 val desc = etDesc.text.toString()
                 val cat = spinnerCategory.selectedItem.toString()
 
                 if (name.isNotEmpty() && priceStr.isNotEmpty()) {
-                    val newProduct = Product(
-                        name = name,
-                        price = priceStr.toDoubleOrNull() ?: 0.0,
-                        description = desc,
-                        category = cat,
-                        imageUri = productMediaUri,
-                        rating = 0f,
-                        reviewCount = 0
-                    )
-                    db.productDao().insertProduct(newProduct)
-                    Toast.makeText(this, "Товар создан!", Toast.LENGTH_SHORT).show()
+                    val price = priceStr.toDoubleOrNull() ?: 0.0
+                    val discount = discountStr.toIntOrNull() ?: 0
+
+                    if (productId == 0) {
+                        // ЭТО СОЗДАНИЕ НОВОГО
+                        val newProduct = Product(
+                            name = name,
+                            price = price,
+                            discount = discount,
+                            description = desc,
+                            category = cat,
+                            imageUri = productMediaUri,
+                            rating = 0f,
+                            reviewCount = 0
+                        )
+                        db.productDao().insertProduct(newProduct)
+                        Toast.makeText(this, "Товар создан!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // ЭТО ОБНОВЛЕНИЕ СТАРОГО
+                        val updatedProduct = Product(
+                            id = productId,
+                            name = name,
+                            price = price,
+                            discount = discount,
+                            description = desc,
+                            category = cat,
+                            imageUri = productMediaUri,
+                            rating = productToEdit?.rating ?: 0f,
+                            reviewCount = productToEdit?.reviewCount ?: 0
+                        )
+                        db.productDao().updateProduct(updatedProduct)
+                        Toast.makeText(this, "Товар обновлен!", Toast.LENGTH_SHORT).show()
+                    }
+
                     finish()
                 } else {
                     Toast.makeText(this, "Заполните название и цену", Toast.LENGTH_SHORT).show()
@@ -135,30 +205,48 @@ class DetailActivity : AppCompatActivity() {
             }
 
         } else {
-            val name = intent.getStringExtra("NAME") ?: ""
-            val product = db.productDao().getProductByName(name)
-            productId = product?.id ?: 0
+            // --- РЕЖИМ ПРОСМОТРА ---
+            if (productToEdit != null) {
+                tvName.text = productToEdit.name
 
-            tvName.text = product?.name
-            tvPrice.text = "${product?.price} $"
-            tvDesc.text = product?.description
+                // Расчет цены для просмотра
+                val finalPrice = productToEdit.price - (productToEdit.price * productToEdit.discount / 100)
+                tvPrice.text = "${finalPrice.toInt()} ₽"
+                if (productToEdit.discount > 0) {
+                    tvPrice.append(" (Скидка ${productToEdit.discount}%)")
+                }
 
-            if (product?.imageUri != null) {
-                ivImage.setImageURI(Uri.parse(product.imageUri))
-                ivImage.scaleType = ImageView.ScaleType.CENTER_CROP
-                ivImage.setPadding(0,0,0,0)
+                tvDesc.text = productToEdit.description
+
+                if (productToEdit.imageUri != null) {
+                    ivImage.setImageURI(Uri.parse(productToEdit.imageUri))
+                    ivImage.scaleType = ImageView.ScaleType.CENTER_CROP
+                    ivImage.setPadding(0,0,0,0)
+                }
             }
 
             btnCart.setOnClickListener {
-                val existingItem = db.productDao().getCartItemByName(name, currentUserId)
-                if (existingItem != null) {
-                    existingItem.quantity += 1
-                    db.productDao().updateCartItem(existingItem)
-                } else {
-                    val cartItem = CartItem(ownerId = currentUserId, name = name, price = product?.price ?: 0.0, imageUri = product?.imageUri, quantity = 1)
-                    db.productDao().addToCart(cartItem)
+                if (nameFromIntent != null) {
+                    val price = productToEdit?.price ?: 0.0
+                    // В корзину кладем цену СО СКИДКОЙ
+                    val finalPrice = price - (price * (productToEdit?.discount ?: 0) / 100)
+
+                    val existingItem = db.productDao().getCartItemByName(nameFromIntent, currentUserId)
+                    if (existingItem != null) {
+                        existingItem.quantity += 1
+                        db.productDao().updateCartItem(existingItem)
+                    } else {
+                        val cartItem = CartItem(
+                            ownerId = currentUserId,
+                            name = nameFromIntent,
+                            price = finalPrice, // <-- Цена со скидкой
+                            imageUri = productToEdit?.imageUri,
+                            quantity = 1
+                        )
+                        db.productDao().addToCart(cartItem)
+                    }
+                    Toast.makeText(this, "В корзине!", Toast.LENGTH_SHORT).show()
                 }
-                Toast.makeText(this, "В корзине!", Toast.LENGTH_SHORT).show()
             }
 
             ivReviewPreview = findViewById(R.id.ivReviewPreview)
@@ -186,20 +274,17 @@ class DetailActivity : AppCompatActivity() {
                     val review = Review(productId = productId, userId = currentUserId, userName = userName, rating = rating, text = text, date = currentDate, mediaUri = reviewMediaUri, mediaType = reviewMediaType)
                     db.productDao().addReview(review)
 
-                    if (product != null) {
+                    if (productToEdit != null) {
                         val newAvg = db.productDao().getAverageRating(productId)
                         val newCount = db.productDao().getReviewCount(productId)
-                        db.productDao().updateProduct(product.copy(rating = newAvg, reviewCount = newCount))
+                        db.productDao().updateProduct(productToEdit.copy(rating = newAvg, reviewCount = newCount))
                     }
 
                     Toast.makeText(this, "Отзыв отправлен", Toast.LENGTH_SHORT).show()
-
-                    // Очистка полей после отправки
                     etReview.setText("")
                     findViewById<RatingBar>(R.id.ratingBar).rating = 0f
                     ivReviewPreview.visibility = View.GONE
-                    reviewMediaUri = null // Очищаем ссылку на фото
-
+                    reviewMediaUri = null
                     loadReviews()
                 }
             }
@@ -219,24 +304,19 @@ class DetailActivity : AppCompatActivity() {
             val tvDate = view.findViewById<TextView>(R.id.reviewDate)
             val tvText = view.findViewById<TextView>(R.id.reviewText)
             val ratingBar = view.findViewById<RatingBar>(R.id.reviewRating)
-            val ivReviewImage = view.findViewById<ImageView>(R.id.reviewImage) // Картинка внутри отзыва
+            val ivReviewImage = view.findViewById<ImageView>(R.id.reviewImage)
 
             tvAuthor.text = review.userName
             tvDate.text = review.date
             tvText.text = review.text
             ratingBar.rating = review.rating.toFloat()
 
-            // НОВОЕ: Показываем фото, если оно есть
             if (review.mediaUri != null && review.mediaUri.isNotEmpty()) {
                 ivReviewImage.visibility = View.VISIBLE
                 ivReviewImage.setImageURI(Uri.parse(review.mediaUri))
-                ivReviewImage.setOnClickListener {
-                    // Можно добавить открытие на весь экран, но пока так
-                }
             } else {
                 ivReviewImage.visibility = View.GONE
             }
-
             container.addView(view)
         }
     }

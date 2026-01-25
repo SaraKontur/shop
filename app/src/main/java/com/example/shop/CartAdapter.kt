@@ -10,21 +10,19 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class CartAdapter(
-    private val items: List<CartItem>,
+    private val cartItems: List<CartItem>,
     private val onDeleteClick: (CartItem) -> Unit,
-    private val onQuantityChange: (CartItem, Int) -> Unit // НОВАЯ ФУНКЦИЯ
+    private val onQuantityChange: (CartItem, Int) -> Unit
 ) : RecyclerView.Adapter<CartAdapter.CartHolder>() {
 
     class CartHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.cartName)
         val price: TextView = view.findViewById(R.id.cartPrice)
+        val quantity: TextView = view.findViewById(R.id.tvQuantity)
         val image: ImageView = view.findViewById(R.id.cartImage)
-        val deleteBtn: ImageButton = view.findViewById(R.id.btnDeleteCart)
-
-        // Элементы для изменения количества (убедись, что они есть в item_cart.xml)
-        val btnMinus: ImageButton? = view.findViewById(R.id.btnMinus)
-        val btnPlus: ImageButton? = view.findViewById(R.id.btnPlus)
-        val tvQuantity: TextView? = view.findViewById(R.id.tvQuantity)
+        val btnPlus: ImageButton = view.findViewById(R.id.btnPlus)
+        val btnMinus: ImageButton = view.findViewById(R.id.btnMinus)
+        val btnDelete: ImageButton = view.findViewById(R.id.btnDeleteCart)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartHolder {
@@ -33,36 +31,54 @@ class CartAdapter(
     }
 
     override fun onBindViewHolder(holder: CartHolder, position: Int) {
-        val item = items[position]
+        val item = cartItems[position]
 
         holder.name.text = item.name
-        holder.price.text = "${item.price * item.quantity} $" // Цена за ВСЕ количество
+
+        // ИСПРАВЛЕНИЕ 2: Убираем "хвосты" после запятой (toInt())
+        // Показываем цену за ВСЕ количество сразу (цена * кол-во)
+        val currentTotalPrice = item.price * item.quantity
+        holder.price.text = "${currentTotalPrice.toInt()} ₽"
+
+        holder.quantity.text = item.quantity.toString()
 
         if (item.imageUri != null) {
             holder.image.setImageURI(Uri.parse(item.imageUri))
+            holder.image.scaleType = ImageView.ScaleType.CENTER_CROP
         } else {
-            holder.image.setImageResource(android.R.drawable.ic_menu_gallery)
+            holder.image.setImageResource(android.R.drawable.ic_menu_camera)
+            holder.image.scaleType = ImageView.ScaleType.FIT_CENTER
+            holder.image.setPadding(20, 20, 20, 20)
         }
 
-        holder.deleteBtn.setOnClickListener { onDeleteClick(item) }
+        holder.btnDelete.setOnClickListener { onDeleteClick(item) }
 
-        // Логика кнопок + и -
-        holder.tvQuantity?.text = item.quantity.toString()
+        // --- ЛОГИКА ПЛЮСА ---
+        holder.btnPlus.setOnClickListener {
+            item.quantity++ // Увеличиваем в памяти
 
-        holder.btnMinus?.setOnClickListener {
+            // ИСПРАВЛЕНИЕ 1: Мгновенно обновляем текст на экране
+            holder.quantity.text = item.quantity.toString()
+            holder.price.text = "${(item.price * item.quantity).toInt()} ₽"
+
+            // Сообщаем базе данных
+            onQuantityChange(item, item.quantity)
+        }
+
+        // --- ЛОГИКА МИНУСА ---
+        holder.btnMinus.setOnClickListener {
             if (item.quantity > 1) {
-                onQuantityChange(item, item.quantity - 1)
-            } else {
-                // Если количество 1 и нажали минус - можно спросить про удаление,
-                // но пока просто ничего не делаем или вызываем удаление
-                onDeleteClick(item)
-            }
-        }
+                item.quantity-- // Уменьшаем в памяти
 
-        holder.btnPlus?.setOnClickListener {
-            onQuantityChange(item, item.quantity + 1)
+                // ИСПРАВЛЕНИЕ 1: Мгновенно обновляем текст на экране
+                holder.quantity.text = item.quantity.toString()
+                holder.price.text = "${(item.price * item.quantity).toInt()} ₽"
+
+                // Сообщаем базе данных
+                onQuantityChange(item, item.quantity)
+            }
         }
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount(): Int = cartItems.size
 }

@@ -59,10 +59,33 @@ interface ProductDao {
     // НОВОЕ: Обновить статус заказа
     @Update
     fun updateOrder(order: Order)
+
+
+    // --- КАТЕГОРИИ ---
+    @Query("SELECT * FROM categories")
+    fun getAllCategories(): List<Category>
+
+    @Insert
+    fun insertCategory(category: Category)
+
+    @Delete
+    fun deleteCategory(category: Category)
+
+    // Проверка, есть ли категории (для начального заполнения)
+    @Query("SELECT COUNT(*) FROM categories")
+    fun getCategoriesCount(): Int
+
+    @Query("SELECT COUNT(*) FROM products WHERE category = :catName")
+    fun getProductsCountByCategory(catName: String): Int
+
+    @Query("SELECT * FROM orders WHERE id = :id")
+    fun getOrderById(id: Int): Order?
+
+
+
 }
 
-// ВЕРСИЯ 8
-@Database(entities = [User::class, Product::class, CartItem::class, FavoriteItem::class, Order::class, Review::class], version = 10, exportSchema = false)
+@Database(entities = [User::class, Product::class, CartItem::class, FavoriteItem::class, Order::class, Review::class, Category::class], version = 12, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun productDao(): ProductDao
 }

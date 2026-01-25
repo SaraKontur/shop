@@ -29,6 +29,8 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".OrdersActivity" />
+        <activity android:name=".CategoriesActivity" />
+        <activity android:name=".OrderDetailActivity" />
     </application>
 
 </manifest>

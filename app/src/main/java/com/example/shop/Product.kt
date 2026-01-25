@@ -17,12 +17,13 @@ data class User(
 data class Product(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val price: Double,
+    val price: Double, // Это будет ЦЕНА БЕЗ СКИДКИ
+    val discount: Int = 0, // НОВОЕ ПОЛЕ: Скидка в % (0, 10, 50...)
     val description: String,
-    val imageUri: String? = null,
-    val category: String = "Разное",
-    val rating: Float = 0.0f,
-    val reviewCount: Int = 0 // НОВОЕ: Количество отзывов
+    val imageUri: String?,
+    val category: String,
+    val rating: Float = 0f,
+    val reviewCount: Int = 0
 )
 
 @Entity(tableName = "reviews")
