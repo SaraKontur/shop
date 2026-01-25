@@ -28,14 +28,6 @@ A robust native Android e-commerce application built with **Kotlin**. This proje
 * **Concurrency:** Coroutines (for database operations)
 * **Images:** URI handling and local storage
 
-## 📱 Screenshots
-
-<p align="center">
-  <img src="screenshots/2.jpg" width="250" />
-  <img src="screenshots/3.jpg" width="250" />
-  <img src="screenshots/1.jpg" width="250" />
-</p>
-
 ## 🚀 How to Run
 
 1.  Clone the repository:
