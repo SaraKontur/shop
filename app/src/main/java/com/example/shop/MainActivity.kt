@@ -12,7 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.ItemTouchHelper // <--- НУЖЕН ЭТОТ ИМПОРТ
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -46,6 +46,8 @@ class MainActivity : AppCompatActivity() {
             .allowMainThreadQueries()
             .fallbackToDestructiveMigration()
             .build()
+
+        prePopulateDatabase()
 
         rv = findViewById(R.id.recyclerView)
         val cartPanelCard = findViewById<MaterialCardView>(R.id.cartPanelCard)
@@ -224,7 +226,6 @@ class MainActivity : AppCompatActivity() {
         if (products.isEmpty()) Toast.makeText(this, "В избранном пусто", Toast.LENGTH_SHORT).show()
     }
 
-    // --- ОБНОВЛЕННАЯ ФУНКЦИЯ КОРЗИНЫ СО СВАЙПОМ ---
     private fun loadCart(rv: RecyclerView) {
         rv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         val cartItems = db.productDao().getCartItems(currentUserId)
@@ -238,7 +239,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Корзина пуста", Toast.LENGTH_SHORT).show()
         }
 
-        // Подключаем Адаптер
         rv.adapter = CartAdapter(cartItems,
             onDeleteClick = { item ->
                 db.productDao().deleteCartItem(item)
@@ -251,34 +251,22 @@ class MainActivity : AppCompatActivity() {
             }
         )
 
-        // --- ЛОГИКА СВАЙПА ---
-        // 1. Удаляем старый помощник, если он был (чтобы не дублировались)
         itemTouchHelper?.attachToRecyclerView(null)
 
-        // 2. Создаем новый помощник (Свайп ВЛЕВО или ВПРАВО)
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
             override fun onMove(r: RecyclerView, v: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder): Boolean {
-                return false // Перетаскивание (drag & drop) нам не нужно
+                return false
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                // Получаем позицию элемента, который смахнули
                 val position = viewHolder.adapterPosition
-
-                // Получаем сам товар из списка
                 val itemToDelete = cartItems[position]
-
-                // Удаляем из базы
                 db.productDao().deleteCartItem(itemToDelete)
-
-                // Перезагружаем корзину (чтобы пересчиталась цена и обновился список)
                 loadCart(rv)
-
                 Toast.makeText(this@MainActivity, "${itemToDelete.name} удален", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // 3. Подключаем помощник к списку
         itemTouchHelper = ItemTouchHelper(swipeCallback)
         itemTouchHelper?.attachToRecyclerView(rv)
     }
@@ -289,18 +277,72 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tvTotalPrice).text = "Итого: ${total.toInt()} ₽"
     }
 
+    // --- ЛОГИКА ОФОРМЛЕНИЯ ЗАКАЗА ---
+
     private fun showPaymentDialog() {
-        val options = arrayOf("Картой на сайте", "Картой курьеру", "Наличными курьеру")
-        var selectedOption = options[0]
+        val view = layoutInflater.inflate(R.layout.dialog_checkout, null)
+
+        val rgClientType = view.findViewById<android.widget.RadioGroup>(R.id.rgClientType)
+        val llJurFields = view.findViewById<android.widget.LinearLayout>(R.id.llJurFields)
+        val etInn = view.findViewById<android.widget.EditText>(R.id.etInn)
+        val etCompany = view.findViewById<android.widget.EditText>(R.id.etCompany)
+
+        val rbCardSite = view.findViewById<android.widget.RadioButton>(R.id.rbCardSite)
+        val rbCardCourier = view.findViewById<android.widget.RadioButton>(R.id.rbCardCourier)
+        val rbCash = view.findViewById<android.widget.RadioButton>(R.id.rbCash)
+        val rbAccount = view.findViewById<android.widget.RadioButton>(R.id.rbAccount)
+
+        // Логика переключения Физ/Юр лицо
+        rgClientType.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.rbJur) {
+                // Включили Юр. лицо
+                llJurFields.visibility = View.VISIBLE
+                rbCardSite.visibility = View.GONE
+                rbCardCourier.visibility = View.GONE
+                rbCash.visibility = View.GONE
+                rbAccount.visibility = View.VISIBLE
+                rbAccount.isChecked = true
+            } else {
+                // Включили Физ. лицо
+                llJurFields.visibility = View.GONE
+                rbCardSite.visibility = View.VISIBLE
+                rbCardCourier.visibility = View.VISIBLE
+                rbCash.visibility = View.VISIBLE
+                rbAccount.visibility = View.GONE
+                rbCardSite.isChecked = true
+            }
+        }
+
         AlertDialog.Builder(this)
-            .setTitle("Выберите способ оплаты")
-            .setSingleChoiceItems(options, 0) { _, which -> selectedOption = options[which] }
-            .setPositiveButton("Оплатить") { _, _ -> processOrder(selectedOption) }
+            .setTitle("Оформление заказа")
+            .setView(view)
+            .setPositiveButton("Оформить") { _, _ ->
+                val isB2B = rgClientType.checkedRadioButtonId == R.id.rbJur
+                var finalPaymentMethod = ""
+
+                if (isB2B) {
+                    val inn = etInn.text.toString().trim()
+                    val company = etCompany.text.toString().trim()
+                    if (inn.isEmpty() || company.isEmpty()) {
+                        Toast.makeText(this, "Заполните ИНН и Название!", Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
+                    }
+                    finalPaymentMethod = "Счет на оплату ($company, ИНН: $inn)"
+                    processOrder(finalPaymentMethod, isB2B, company, inn)
+                } else {
+                    finalPaymentMethod = when {
+                        rbCardCourier.isChecked -> "Картой курьеру"
+                        rbCash.isChecked -> "Наличными курьеру"
+                        else -> "Картой на сайте"
+                    }
+                    processOrder(finalPaymentMethod, isB2B, "", "")
+                }
+            }
             .setNegativeButton("Отмена", null)
             .show()
     }
 
-    private fun processOrder(paymentMethod: String) {
+    private fun processOrder(paymentMethod: String, isB2B: Boolean, company: String, inn: String) {
         val cartItems = db.productDao().getCartItems(currentUserId)
         if (cartItems.isEmpty()) return
 
@@ -322,10 +364,140 @@ class MainActivity : AppCompatActivity() {
             status = "Создан",
             paymentMethod = paymentMethod
         )
+
         db.productDao().insertOrder(order)
         db.productDao().clearCart(currentUserId)
-        Toast.makeText(this, "Заказ оформлен!", Toast.LENGTH_LONG).show()
         loadCart(rv)
+
+        // Если это Юр. лицо, показываем сгенерированный "Счет"
+        if (isB2B) {
+            showInvoiceDialog(company, inn, total, currentDate)
+        } else {
+            Toast.makeText(this, "Заказ оформлен! ($paymentMethod)", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Окно генерации счета для бухгалтерии
+    private fun showInvoiceDialog(company: String, inn: String, total: Double, date: String) {
+        val invoiceText = """
+            Поставщик: ООО "Мой Магазин" (ИНН: 7701234567)
+            Покупатель: $company (ИНН: $inn)
+            Дата: $date
+            
+            К оплате: ${total.toInt()} ₽
+            Без НДС.
+            
+            Реквизиты для оплаты:
+            Р/С: 40702810123450000001
+            БИК: 044525225
+            
+            Статус заказа изменится на "Сборка" после поступления средств.
+        """.trimIndent()
+
+        AlertDialog.Builder(this)
+            .setTitle("Счет на оплату сформирован")
+            .setMessage(invoiceText)
+            .setPositiveButton("Скачать PDF") { _, _ ->
+                downloadPdf(invoiceText, company)
+            }
+            .setNeutralButton("Закрыть", null)
+            .setCancelable(false)
+            .show()
+    }
+
+    // --- НОВАЯ ФУНКЦИЯ: РЕАЛЬНОЕ СОЗДАНИЕ И СОХРАНЕНИЕ PDF ---
+    private fun downloadPdf(text: String, companyName: String) {
+        val pdfDocument = android.graphics.pdf.PdfDocument()
+        val pageInfo = android.graphics.pdf.PdfDocument.PageInfo.Builder(595, 842, 1).create()
+        val page = pdfDocument.startPage(pageInfo)
+
+        val paint = android.graphics.Paint()
+        paint.textSize = 16f
+
+        var y = 50f
+        for (line in text.split("\n")) {
+            page.canvas.drawText(line, 50f, y, paint)
+            y += 25f
+        }
+        pdfDocument.finishPage(page)
+
+        val safeCompanyName = companyName.replace(" ", "_")
+        val fileName = "Invoice_${safeCompanyName}_${System.currentTimeMillis()}.pdf"
+
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                val resolver = contentResolver
+                val contentValues = android.content.ContentValues().apply {
+                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
+                    put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS)
+                }
+                val uri = resolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    resolver.openOutputStream(uri)?.use { pdfDocument.writeTo(it) }
+                    Toast.makeText(this, "✅ PDF сохранен в Загрузки!", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
+                val file = java.io.File(downloadsDir, fileName)
+                pdfDocument.writeTo(java.io.FileOutputStream(file))
+                Toast.makeText(this, "✅ PDF сохранен в Загрузки!", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "❌ Ошибка сохранения: ${e.message}", Toast.LENGTH_LONG).show()
+        } finally {
+            pdfDocument.close()
+        }
+    }
+
+    private fun prePopulateDatabase() {
+        // Проверяем, есть ли уже товары в базе
+        val currentProducts = db.productDao().getAllProducts()
+
+        // Если база пустая (первый запуск приложения)
+        if (currentProducts.isEmpty()) {
+
+            // 1. Создаем аптечные категории
+            if (db.productDao().getCategoriesCount() == 0) {
+                db.productDao().insertCategory(Category(name = "Обезболивающие"))
+                db.productDao().insertCategory(Category(name = "От простуды"))
+                db.productDao().insertCategory(Category(name = "Витамины"))
+            }
+
+            // 2. Создаем стартовые лекарства
+            val p1 = Product(
+                name = "Нурофен Экспресс",
+                price = 350.0,
+                discount = 0,
+                description = "Капсулы с жидким центром. Быстрое и эффективное средство от головной и мышечной боли.",
+                imageUri = "res/drawable/product2.jpg",
+                category = "Обезболивающие"
+            )
+
+            val p2 = Product(
+                name = "ТераФлю Экстра",
+                price = 480.0,
+                discount = 10, // Скидка 10%
+                description = "Порошок со вкусом лимона. Снимает жар, заложенность носа и боль в горле.",
+                imageUri = "res/drawable/product1.jpeg",
+                category = "От простуды"
+            )
+
+            val p3 = Product(
+                name = "Витамин D3 (Аквадетрим)",
+                price = 250.0,
+                discount = 5, // Скидка 5%
+                description = "Водный раствор витамина D3. Необходим для укрепления иммунитета и костной ткани.",
+                imageUri = "res/drawable/product3.jpg",
+                category = "Витамины"
+            )
+
+            // 3. Сохраняем лекарства в базу данных
+            db.productDao().insertProduct(p1)
+            db.productDao().insertProduct(p2)
+            db.productDao().insertProduct(p3)
+        }
     }
 }
 

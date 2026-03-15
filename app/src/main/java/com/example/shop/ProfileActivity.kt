@@ -105,15 +105,7 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        val btnTheme = findViewById<Button>(R.id.btnTheme)
-        btnTheme.setOnClickListener {
-            val currentMode = AppCompatDelegate.getDefaultNightMode()
-            if (currentMode == AppCompatDelegate.MODE_NIGHT_YES) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            }
-        }
+
 
         btnManageCategories.setOnClickListener {
             startActivity(Intent(this, CategoriesActivity::class.java))

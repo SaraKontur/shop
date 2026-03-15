@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Тип покупателя"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/rgClientType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <RadioButton
+            android:id="@+id/rbPhys"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Физ. лицо"
+            android:checked="true"
+            android:layout_marginEnd="16dp"/>
+
+        <RadioButton
+            android:id="@+id/rbJur"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Юр. лицо"/>
+    </RadioGroup>
+
+    <LinearLayout
+        android:id="@+id/llJurFields"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp">
+
+        <EditText
+            android:id="@+id/etInn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="ИНН организации"
+            android:inputType="number"
+            android:maxLength="12"/>
+
+        <EditText
+            android:id="@+id/etCompany"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Название (например, ООО Вектор)"
+            android:inputType="textCapWords"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Способ оплаты"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/rgPaymentMethod"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rbCardSite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Картой на сайте"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/rbCardCourier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Картой курьеру"/>
+
+        <RadioButton
+            android:id="@+id/rbCash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Наличными курьеру"/>
+
+        <RadioButton
+            android:id="@+id/rbAccount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Выставить счет на оплату"
+            android:visibility="gone"/>
+    </RadioGroup>
+
+</LinearLayout>

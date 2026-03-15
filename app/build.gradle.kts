@@ -1,8 +1,7 @@
 plugins {
-
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    // ВАЖНО: Эта строка включает поддержку kapt. Без неё слово kapt в dependencies работать не будет.
+    // Оставляем kapt, раз он у тебя исторически был
     id("kotlin-kapt")
 }
 
@@ -29,27 +28,29 @@ android {
             )
         }
     }
+
+    // ВАЖНО: Переходим на Java 17
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-// Базовые библиотеки Android
+    // Базовые библиотеки Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
-    // ROOM (SQLite)
-    val roomVersion = "2.6.1"
+    // ROOM (SQLite) - ИСПОЛЬЗУЕМ ВЕРСИЮ С ПОДДЕРЖКОЙ KOTLIN 2.2+
+    val roomVersion = "2.7.0-rc02"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion") // kapt теперь будет работать
+    kapt("androidx.room:room-compiler:$roomVersion")
 
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.2")

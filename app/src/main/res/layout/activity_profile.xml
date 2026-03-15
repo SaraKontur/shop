@@ -49,6 +49,4 @@
 
     <Button android:id="@+id/btnLogout" android:text="Выйти из аккаунта" android:backgroundTint="#F44336" android:layout_marginTop="40dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
     <Button android:id="@+id/btnOrders" android:text="Мои заказы" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-    <Button android:id="@+id/btnTheme" android:text="Переключить тему (День/Ночь)" android:layout_marginTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-
 </LinearLayout>
